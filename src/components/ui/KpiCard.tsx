@@ -4,20 +4,21 @@ interface Props {
   title: string
   value: number | string
   color?: string
-  percent?: number
+  suffix?: string
+  subtitle?: string
 }
 
-export default function KpiCard({ title, value, color = '#3b82f6', percent }: Props) {
+export default function KpiCard({ title, value, color = '#3b82f6', suffix, subtitle }: Props) {
+  const displayValue = typeof value === 'number' ? value.toLocaleString() : value
+  
   return (
-    <Card sx={{ borderLeft: 4, borderColor: color }}>
+    <Card sx={{ borderLeft: 4, borderColor: color, height: '100%' }}>
       <CardContent>
-        <Typography variant="body2" color="text.secondary">{title}</Typography>
+        <Typography variant="body2" color="text.secondary" noWrap>{title}</Typography>
         <Typography variant="h4" fontWeight={600}>
-          {typeof value === 'number' ? value.toLocaleString() : value}
+          {displayValue}{suffix}
         </Typography>
-        {percent !== undefined && (
-          <Typography variant="caption" color="text.secondary">{percent.toFixed(1)}% of total</Typography>
-        )}
+        {subtitle && <Typography variant="caption" color="text.secondary">{subtitle}</Typography>}
       </CardContent>
     </Card>
   )

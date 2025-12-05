@@ -1,9 +1,9 @@
 import { Navigate, Outlet } from 'react-router-dom'
+import { Suspense } from 'react'
+import { CircularProgress, Box } from '@mui/material'
 import { useAuthStore } from './stores/authStore'
+import { navItems, getPublicItems, getAdminItems } from './config/navigation'
 import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
-import DataSourcesPage from './pages/DataSourcesPage'
-import UsersPage from './pages/UsersPage'
 import AppLayout from './components/layout/AppLayout'
 
 function AdminRoute() {
@@ -14,18 +14,32 @@ function AdminRoute() {
   return <Outlet />
 }
 
+const Loading = () => (
+  <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+    <CircularProgress />
+  </Box>
+)
+
+// Auto-generate routes from config
+const publicRoutes = getPublicItems().map(item => ({
+  path: item.path,
+  element: <Suspense fallback={<Loading />}><item.component /></Suspense>
+}))
+
+const adminRoutes = getAdminItems().map(item => ({
+  path: item.path,
+  element: <Suspense fallback={<Loading />}><item.component /></Suspense>
+}))
+
 export const routes = [
   { path: '/login', element: <LoginPage /> },
   {
     element: <AppLayout />,
     children: [
-      { path: '/', element: <DashboardPage /> },
+      ...publicRoutes,
       {
         element: <AdminRoute />,
-        children: [
-          { path: '/admin/datasources', element: <DataSourcesPage /> },
-          { path: '/admin/users', element: <UsersPage /> },
-        ],
+        children: adminRoutes,
       },
     ],
   },

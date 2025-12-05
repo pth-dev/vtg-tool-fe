@@ -1,102 +1,152 @@
-import { useState } from 'react'
-import { Box, Card, CardContent, Typography, Grid, Select, MenuItem, FormControl, InputLabel, Tabs, Tab, Chip, CircularProgress, OutlinedInput, Checkbox, ListItemText, SelectChangeEvent } from '@mui/material'
-import { PageHeader, KpiCard } from '../components/ui'
-import { DonutChart, BarChart, AreaChart } from '../components/charts'
+import { Box, Card, CardContent, Typography, Grid, Chip, Table, TableHead, TableRow, TableCell, TableBody, useMediaQuery, useTheme, CircularProgress } from '@mui/material'
+import { PageHeader, KpiCard, FilterPanel, DashboardSkeleton } from '../components/ui'
+import { BarChart, LineChart } from '../components/charts'
 import { useDashboard } from '../hooks'
 
 export default function DashboardPage() {
-  const { data, isLoading, charts, customers, statusFilter, setStatusFilter, customerFilter, setCustomerFilter } = useDashboard()
-  const [tab, setTab] = useState(0)
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const { data, isLoading, isFetching, filters, filterOptions, selectedMonth, crossFilter, toggleCrossFilter, updateFilter, clearFilters } = useDashboard()
 
-  const handleCustomerChange = (e: SelectChangeEvent<string[]>) => {
-    setCustomerFilter(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)
-  }
+  // First load - show full skeleton
+  if (isLoading && !data) return <DashboardSkeleton />
+  
+  // No data
+  if (!data?.kpis?.total_orders) return <Box p={3}><Typography color="text.secondary">No data available. Admin needs to upload file first.</Typography></Box>
 
-  if (isLoading) return <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>
-  if (!data?.kpis?.total_orders) return <Box p={4}><Typography color="text.secondary">No data available. Admin needs to upload file first.</Typography></Box>
-
-  const { kpis } = data
+  const { kpis, charts } = data
 
   return (
-    <Box p={3}>
+    <Box p={isMobile ? 2 : 3}>
       <PageHeader 
         title="Lock/Hold/Failed Dashboard" 
-        subtitle="Order data analysis"
-        action={data.source_name && <Chip label={data.source_name} color="primary" variant="outlined" />}
+        subtitle={`Data: ${selectedMonth || ''}`}
+        action={!isMobile && data.source_name && <Chip label={data.source_name} color="primary" variant="outlined" size="small" />}
       />
 
-      {/* KPI Cards */}
-      <Grid container spacing={2} mb={3}>
-        <Grid size={{ xs: 6, md: 3 }}><KpiCard title="Total Orders" value={kpis.total_orders} color="#3b82f6" /></Grid>
-        <Grid size={{ xs: 6, md: 3 }}><KpiCard title="HOLD" value={kpis.hold_count} color="#f59e0b" percent={kpis.hold_count / kpis.total_orders * 100} /></Grid>
-        <Grid size={{ xs: 6, md: 3 }}><KpiCard title="FAILURE" value={kpis.failure_count} color="#ef4444" percent={kpis.failure_count / kpis.total_orders * 100} /></Grid>
-        <Grid size={{ xs: 6, md: 3 }}><KpiCard title="LOCK" value={kpis.lock_count} color="#8b5cf6" percent={kpis.lock_count / kpis.total_orders * 100} /></Grid>
-      </Grid>
-
       {/* Filters */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="subtitle2" gutterBottom>Filters</Typography>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Status</InputLabel>
-                <Select value={statusFilter} label="Status" onChange={e => setStatusFilter(e.target.value)}>
-                  <MenuItem value="all">All</MenuItem>
-                  <MenuItem value="HOLD">HOLD</MenuItem>
-                  <MenuItem value="FAILURE">FAILURE</MenuItem>
-                  <MenuItem value="LOCK">LOCK</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Customer</InputLabel>
-                <Select multiple value={customerFilter} onChange={handleCustomerChange} input={<OutlinedInput label="Customer" />} renderValue={s => s.join(', ')}>
-                  {customers.map(c => (
-                    <MenuItem key={c} value={c}><Checkbox checked={customerFilter.includes(c)} /><ListItemText primary={c} /></MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+      {filterOptions && (
+        <FilterPanel 
+          filters={filters} 
+          options={filterOptions}
+          selectedMonth={selectedMonth || ''}
+          onChange={updateFilter} 
+          onClear={clearFilters} 
+        />
+      )}
 
-      {/* Charts */}
-      <Card>
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tab label="Overview" />
-          <Tab label="Trend" />
-          <Tab label="Details" />
-        </Tabs>
-        <CardContent>
-          {tab === 0 && charts && (
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Typography variant="subtitle2" gutterBottom>Distribution by Status</Typography>
-                <DonutChart data={charts.by_status} />
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Typography variant="subtitle2" gutterBottom>Top Customers</Typography>
-                <BarChart data={charts.by_customer} />
-              </Grid>
-            </Grid>
-          )}
-          {tab === 1 && charts && (
-            <>
-              <Typography variant="subtitle2" gutterBottom>Daily Trend</Typography>
-              <AreaChart data={charts.trend.map(t => ({ label: t.date, value: t.count }))} />
-            </>
-          )}
-          {tab === 2 && charts && (
-            <>
-              <Typography variant="subtitle2" gutterBottom>Distribution by Category</Typography>
-              <BarChart data={charts.by_category} color="#10b981" height={380} />
-            </>
-          )}
-        </CardContent>
-      </Card>
+      {/* KPI Cards */}
+      <Box sx={{ opacity: isFetching ? 0.6 : 1, transition: 'opacity 0.2s' }}>
+        <Grid container spacing={isMobile ? 1.5 : 2} mb={3}>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+            <KpiCard title="Total Orders" value={kpis.total_orders} color="#3b82f6" />
+          </Grid>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+            <KpiCard title="Resume Rate" value={kpis.resume_rate} suffix="%" color="#10b981" />
+          </Grid>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+            <KpiCard title="Failed Rate" value={kpis.failed_rate} suffix="%" color="#ef4444" />
+          </Grid>
+          <Grid size={{ xs: 6, sm: 6, md: 3 }}>
+            <KpiCard 
+              title="Top Category" 
+              value={isMobile ? kpis.top_category.name.substring(0, 15) + '...' : kpis.top_category.name} 
+              subtitle={`${kpis.top_category.percent}%`}
+              color="#f59e0b" 
+            />
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Charts - with loading overlay */}
+      <Box sx={{ position: 'relative' }}>
+        {isFetching && (
+          <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, bgcolor: 'rgba(255,255,255,0.7)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CircularProgress size={32} />
+          </Box>
+        )}
+        
+        <Grid container spacing={isMobile ? 2 : 3} mb={3}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card>
+              <CardContent sx={{ p: isMobile ? 2 : 3 }}>
+                <Typography variant="subtitle2" gutterBottom fontWeight={600}>By Customer</Typography>
+                <BarChart 
+                  data={charts.by_customer?.slice(0, isMobile ? 5 : 10) || []} 
+                  color="#3b82f6"
+                  height={isMobile ? 220 : 280}
+                  onClick={(name) => toggleCrossFilter('customer', name)}
+                  selected={crossFilter?.type === 'customer' ? crossFilter.value : undefined}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card>
+              <CardContent sx={{ p: isMobile ? 2 : 3 }}>
+                <Typography variant="subtitle2" gutterBottom fontWeight={600}>By Category</Typography>
+                <BarChart 
+                  data={charts.by_category?.slice(0, isMobile ? 5 : 8) || []} 
+                  color="#10b981"
+                  height={isMobile ? 220 : 280}
+                  onClick={(name) => toggleCrossFilter('category', name)}
+                  selected={crossFilter?.type === 'category' ? crossFilter.value : undefined}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Trend Chart */}
+        {charts?.trend && charts.trend.length > 0 && (
+          <Card sx={{ mb: 3 }}>
+            <CardContent sx={{ p: isMobile ? 2 : 3 }}>
+              <Typography variant="subtitle2" gutterBottom fontWeight={600}>Status Trend</Typography>
+              <LineChart 
+                data={charts.trend} 
+                xKey="date"
+                series={[
+                  { key: 'LOCK', name: 'Lock', color: '#8b5cf6' },
+                  { key: 'HOLD', name: 'Hold', color: '#f59e0b' },
+                  { key: 'FAILURE', name: 'Failure', color: '#ef4444' }
+                ]}
+                height={isMobile ? 220 : 280}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Root Causes Table */}
+        {data.root_causes && data.root_causes.length > 0 && (
+          <Card>
+            <CardContent sx={{ p: isMobile ? 2 : 3 }}>
+              <Typography variant="subtitle2" gutterBottom fontWeight={600}>Root Causes & Improvement Plans</Typography>
+              <Box sx={{ maxHeight: isMobile ? 300 : 350, overflow: 'auto' }}>
+                <Table size="small" stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 600, minWidth: isMobile ? 150 : 200 }}>Root Cause</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>Count</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600 }}>%</TableCell>
+                      {!isMobile && <TableCell sx={{ fontWeight: 600 }}>Improvement Plan</TableCell>}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {data.root_causes.slice(0, isMobile ? 10 : 20).map((rc, i) => (
+                      <TableRow key={i} hover>
+                        <TableCell sx={{ fontSize: 13 }}>{rc.root_cause}</TableCell>
+                        <TableCell align="right">{rc.count}</TableCell>
+                        <TableCell align="right">{rc.percent}%</TableCell>
+                        {!isMobile && <TableCell sx={{ fontSize: 13 }}>{rc.improvement_plan}</TableCell>}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            </CardContent>
+          </Card>
+        )}
+      </Box>
     </Box>
   )
 }

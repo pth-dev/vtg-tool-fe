@@ -1,42 +1,99 @@
 import { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
+
+interface Filters {
+  month: string
+  customers: string[]
+  categories: string[]
+  statuses: string[]
+  products: string[]
+}
 
 interface DashboardData {
-  kpis: { total_orders: number; hold_count: number; failure_count: number; lock_count: number }
-  charts: {
-    by_status: { name: string; value: number }[]
-    by_customer: { name: string; value: number }[]
-    by_category: { name: string; value: number }[]
-    trend: { date: string; count: number }[]
+  kpis: {
+    total_orders: number
+    resume_rate: number
+    failed_rate: number
+    top_category: { name: string; percent: number }
+    top_customer: { name: string; percent: number }
   }
+  charts: {
+    by_customer: { name: string; count: number; percent: number }[]
+    by_category: { name: string; count: number; percent: number }[]
+    by_status: { name: string; count: number; percent: number }[]
+    trend: Record<string, any>[]
+  }
+  root_causes: { root_cause: string; count: number; percent: number; improvement_plan: string }[]
+  filters: {
+    months: string[]
+    customers: string[]
+    categories: string[]
+    statuses: string[]
+    products: string[]
+  }
+  selected_month: string
   source_name?: string
 }
 
 export function useDashboard() {
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [customerFilter, setCustomerFilter] = useState<string[]>([])
+  const [filters, setFilters] = useState<Filters>({
+    month: '',
+    customers: [],
+    categories: [],
+    statuses: [],
+    products: []
+  })
+  
+  const [crossFilter, setCrossFilter] = useState<{ type: string; value: string } | null>(null)
 
-  const { data, isLoading } = useQuery<DashboardData>({
-    queryKey: ['dashboard'],
-    queryFn: () => fetch('/api/dashboard').then(r => r.json())
+  const queryString = useMemo(() => {
+    const params = new URLSearchParams()
+    if (filters.month) params.set('month', filters.month)
+    if (filters.customers.length) params.set('customers', filters.customers.join(','))
+    if (filters.categories.length) params.set('categories', filters.categories.join(','))
+    if (filters.statuses.length) params.set('statuses', filters.statuses.join(','))
+    if (filters.products.length) params.set('products', filters.products.join(','))
+    return params.toString()
+  }, [filters])
+
+  const { data, isLoading, isFetching } = useQuery<DashboardData>({
+    queryKey: ['dashboard', queryString],
+    queryFn: () => fetch(`/api/dashboard?${queryString}`).then(r => r.json()),
+    staleTime: 30000,
+    placeholderData: keepPreviousData, // Keep showing old data while fetching new
   })
 
-  const filteredCharts = useMemo(() => {
-    if (!data) return null
-    let charts = { ...data.charts }
-    if (statusFilter !== 'all') charts.by_status = data.charts.by_status.filter(s => s.name === statusFilter)
-    if (customerFilter.length) charts.by_customer = data.charts.by_customer.filter(c => customerFilter.includes(c.name))
-    return charts
-  }, [data, statusFilter, customerFilter])
+  const updateFilter = (key: keyof Filters, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }))
+  }
+
+  const toggleCrossFilter = (type: string, value: string) => {
+    if (crossFilter?.type === type && crossFilter?.value === value) {
+      setCrossFilter(null)
+      if (type === 'customer') updateFilter('customers', [])
+      if (type === 'category') updateFilter('categories', [])
+    } else {
+      setCrossFilter({ type, value })
+      if (type === 'customer') updateFilter('customers', [value])
+      if (type === 'category') updateFilter('categories', [value])
+    }
+  }
+
+  const clearFilters = () => {
+    setFilters(prev => ({ ...prev, customers: [], categories: [], statuses: [], products: [] }))
+    setCrossFilter(null)
+  }
 
   return {
     data,
     isLoading,
-    charts: filteredCharts || data?.charts,
-    customers: data?.charts.by_customer.map(c => c.name) ?? [],
-    statusFilter,
-    setStatusFilter,
-    customerFilter,
-    setCustomerFilter
+    isFetching,
+    filters,
+    filterOptions: data?.filters,
+    selectedMonth: data?.selected_month,
+    crossFilter,
+    updateFilter,
+    toggleCrossFilter,
+    clearFilters
   }
 }
