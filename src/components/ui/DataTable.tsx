@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { useReactTable, getCoreRowModel, getPaginationRowModel, getSortedRowModel, flexRender, SortingState, ColumnDef } from '@tanstack/react-table'
 import { Box, Table, TableHead, TableRow, TableCell, TableBody, TablePagination } from '@mui/material'
 import { ArrowUpward, ArrowDownward } from '@mui/icons-material'

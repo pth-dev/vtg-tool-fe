@@ -30,12 +30,11 @@ export default function LoginPage() {
   }
 
   return (
-    <Box display="flex" minHeight="100vh" alignItems="center" justifyContent="center" bgcolor="#f5f5f5">
+    <Box display="flex" minHeight="100vh" alignItems="center" justifyContent="center" bgcolor="background.default">
       <Card sx={{ width: '100%', maxWidth: 400 }}>
         <CardContent sx={{ p: 4 }}>
           <Box textAlign="center" mb={4}>
-            <img src="/logo.f0f4e5c943afc7875feb.png" alt="VTGTOOL" style={{ height: 60, marginBottom: 8 }} />
-            <Typography variant="h5" fontWeight={700} color="primary">VTGTOOL</Typography>
+            <Typography variant="h4" fontWeight={700} color="primary" mb={1}>VTGTOOL</Typography>
             <Typography variant="body2" color="text.secondary">Admin Login</Typography>
           </Box>
           <form onSubmit={handleSubmit}>

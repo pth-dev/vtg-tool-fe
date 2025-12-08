@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom'
 import { Suspense } from 'react'
 import { CircularProgress, Box } from '@mui/material'
 import { useAuthStore } from './stores/authStore'
-import { navItems, getPublicItems, getAdminItems } from './config/navigation'
+import { getPublicItems, getAdminItems } from './config/navigation'
 import LoginPage from './pages/LoginPage'
 import AppLayout from './components/layout/AppLayout'
 

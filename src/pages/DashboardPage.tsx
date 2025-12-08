@@ -61,7 +61,18 @@ export default function DashboardPage() {
       {/* Charts - with loading overlay */}
       <Box sx={{ position: 'relative' }}>
         {isFetching && (
-          <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, bgcolor: 'rgba(255,255,255,0.7)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(9,9,11,0.7)' : 'rgba(255,255,255,0.7)', 
+            zIndex: 10, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center' 
+          }}>
             <CircularProgress size={32} />
           </Box>
         )}
@@ -132,7 +143,7 @@ export default function DashboardPage() {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {data.root_causes.slice(0, isMobile ? 10 : 20).map((rc, i) => (
+                    {data.root_causes.slice(0, isMobile ? 10 : 20).map((rc: { root_cause: string; count: number; percent: number; improvement_plan?: string }, i: number) => (
                       <TableRow key={i} hover>
                         <TableCell sx={{ fontSize: 13 }}>{rc.root_cause}</TableCell>
                         <TableCell align="right">{rc.count}</TableCell>

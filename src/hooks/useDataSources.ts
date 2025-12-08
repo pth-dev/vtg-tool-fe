@@ -7,7 +7,7 @@ export function useDataSources() {
   const query = useQuery({ queryKey: ['datasources'], queryFn: api.getDataSources })
 
   const uploadMutation = useMutation({
-    mutationFn: api.uploadFile,
+    mutationFn: (file: File) => api.uploadFile(file),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['datasources'] })
   })
 
@@ -19,9 +19,9 @@ export function useDataSources() {
   return {
     sources: query.data ?? [],
     isLoading: query.isLoading,
-    uploadFile: uploadMutation.mutate,
+    uploadFile: (file: File) => uploadMutation.mutate(file),
     deleteSource: deleteMutation.mutate,
     isUploading: uploadMutation.isPending,
-    previewData: api.previewData
+    previewData: api.previewDataSource
   }
 }

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Divider, Button, useMediaQuery, useTheme, IconButton } from '@mui/material'
+import { Box, Drawer, List, ListItemButton, ListItemIcon, ListItemText, Divider, Button, useMediaQuery, useTheme, IconButton, Typography } from '@mui/material'
 import { Login, Logout, Menu } from '@mui/icons-material'
 import { useAuthStore } from '../../stores/authStore'
 import { getSidebarItems } from '../../config/navigation'
+import { ThemeToggle } from '../ui/ThemeToggle'
 
 const DRAWER_WIDTH = 240
 const DRAWER_COLLAPSED = 72
@@ -29,14 +30,25 @@ export default function AppLayout() {
     <>
       {/* Header */}
       <Box
-        sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+        sx={{ 
+          p: 2, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          cursor: 'pointer',
+          minHeight: 64
+        }}
         onClick={() => !isMobile && setCollapsed(!collapsed)}
       >
-        <img 
-          src={showText ? "/logo.f0f4e5c943afc7875feb.png" : "/favicon.png"} 
-          alt="VTGTOOL" 
-          style={{ height: showText ? 40 : 36 }} 
-        />
+        {showText ? (
+          <Typography variant="h6" fontWeight={700} color="primary">
+            VTGTOOL
+          </Typography>
+        ) : (
+          <Typography variant="h6" fontWeight={700} color="primary">
+            VTG
+          </Typography>
+        )}
       </Box>
 
       <Divider />
@@ -59,6 +71,9 @@ export default function AppLayout() {
 
       {/* Footer */}
       <Box sx={{ p: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+          <ThemeToggle />
+        </Box>
         {user ? (
           <Button
             startIcon={<Logout />}
@@ -89,15 +104,35 @@ export default function AppLayout() {
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {/* Mobile header */}
       {isMobile && (
-        <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1200, bgcolor: 'white', boxShadow: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1 }}>
-          <img src="/logo.f0f4e5c943afc7875feb.png" alt="VTGTOOL" style={{ height: 32 }} />
-          <IconButton onClick={() => setMobileOpen(true)}>
-            <Menu />
-          </IconButton>
+        <Box 
+          sx={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            zIndex: 1200, 
+            bgcolor: 'background.paper', 
+            boxShadow: 1, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            px: 2, 
+            py: 1,
+            borderBottom: 1,
+            borderColor: 'divider'
+          }}
+        >
+          <Typography variant="h6" fontWeight={700} color="primary">VTGTOOL</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <ThemeToggle />
+            <IconButton onClick={() => setMobileOpen(true)}>
+              <Menu />
+            </IconButton>
+          </Box>
         </Box>
       )}
 
-      {/* Mobile Drawer - right side, always show text */}
+      {/* Mobile Drawer */}
       {isMobile ? (
         <Drawer
           variant="temporary"
@@ -107,7 +142,7 @@ export default function AppLayout() {
           sx={{
             '& .MuiDrawer-paper': {
               width: DRAWER_WIDTH,
-              bgcolor: '#ffffff',
+              bgcolor: 'background.paper',
             }
           }}
         >
@@ -122,8 +157,6 @@ export default function AppLayout() {
             '& .MuiDrawer-paper': {
               width,
               transition: 'width 0.2s',
-              bgcolor: '#ffffff',
-              borderRight: '1px solid #e5e7eb',
               overflowX: 'hidden'
             }
           }}
@@ -132,7 +165,16 @@ export default function AppLayout() {
         </Drawer>
       )}
 
-      <Box component="main" sx={{ flex: 1, bgcolor: '#f8fafc', overflow: 'auto', pt: isMobile ? 7 : 0 }}>
+      <Box 
+        component="main" 
+        sx={{ 
+          flex: 1, 
+          bgcolor: 'background.default', 
+          overflow: 'auto', 
+          pt: isMobile ? 7 : 0,
+          minHeight: '100vh'
+        }}
+      >
         <Outlet />
       </Box>
     </Box>
@@ -140,6 +182,9 @@ export default function AppLayout() {
 }
 
 function NavItem({ to, icon, label, collapsed, onClick }: { to: string; icon: React.ReactNode; label: string; collapsed: boolean; onClick?: () => void }) {
+  const theme = useTheme()
+  const isDark = theme.palette.mode === 'dark'
+  
   return (
     <ListItemButton
       component={NavLink}
@@ -153,8 +198,14 @@ function NavItem({ to, icon, label, collapsed, onClick }: { to: string; icon: Re
         py: 1,
         minHeight: 44,
         color: 'text.secondary',
-        '&.active': { bgcolor: '#FBAD18', color: '#012E72', '& .MuiListItemIcon-root': { color: '#012E72' } },
-        '&:hover': { bgcolor: '#f3f4f6' }
+        '&.active': { 
+          bgcolor: 'secondary.main', 
+          color: 'primary.main', 
+          '& .MuiListItemIcon-root': { color: 'primary.main' } 
+        },
+        '&:hover': { 
+          bgcolor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' 
+        }
       }}
     >
       <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>{icon}</ListItemIcon>
