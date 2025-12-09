@@ -1,37 +1,21 @@
-import { Suspense, useEffect, useState } from 'react'
-import { useRoutes } from 'react-router-dom'
-import { routes } from './routes'
-import { ErrorBoundary } from './components/ErrorBoundary'
-import { PageLoader } from './components/ui'
-import { useAuthStore } from './stores/authStore'
+import { useMemo } from 'react'
+
+import { RouterProvider } from '@tanstack/react-router'
+
+import { router } from './app/router'
+import { useAuthStore } from './features/auth'
 
 export default function App() {
-  const [isReady, setIsReady] = useState(false)
-  
-  useEffect(() => {
-    // Wait for Zustand to hydrate from localStorage
-    const unsubscribe = useAuthStore.persist.onFinishHydration(() => {
-      setIsReady(true)
-    })
-    
-    // If already hydrated (happens on fast loads)
-    if (useAuthStore.persist.hasHydrated()) {
-      setIsReady(true)
-    }
-    
-    return () => unsubscribe()
-  }, [])
+  const user = useAuthStore((s) => s.user)
+  const token = useAuthStore((s) => s.token)
 
-  // Show loader until auth state is hydrated
-  if (!isReady) {
-    return <PageLoader />
-  }
-
-  return (
-    <ErrorBoundary>
-      <Suspense fallback={<PageLoader />}>
-        {useRoutes(routes)}
-      </Suspense>
-    </ErrorBoundary>
+  const auth = useMemo(
+    () => ({
+      isAuthenticated: !!token,
+      isAdmin: user?.role === 'admin',
+    }),
+    [token, user]
   )
+
+  return <RouterProvider router={router} context={{ auth }} />
 }

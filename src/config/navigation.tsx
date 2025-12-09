@@ -1,16 +1,33 @@
-import { lazy, ComponentType } from 'react'
-import { Dashboard, Storage, People, TrackChanges, BarChart, Addchart, ViewQuilt } from '@mui/icons-material'
+import { ComponentType, lazy } from 'react'
 
-// Lazy load pages
-const DashboardPage = lazy(() => import('../pages/DashboardPage'))
-const DataManagerPage = lazy(() => import('../pages/DataManagerPage'))
-const ChartListPage = lazy(() => import('../pages/ChartListPage'))
-const ChartBuilderPage = lazy(() => import('../pages/ChartBuilderPage'))
-const DashboardListPage = lazy(() => import('../pages/DashboardListPage'))
-const DashboardDesignerPage = lazy(() => import('../pages/DashboardDesignerPage'))
-const PublicDashboardPage = lazy(() => import('../pages/PublicDashboardPage'))
-const UsersPage = lazy(() => import('../pages/UsersPage'))
-const IscDoTrackingPage = lazy(() => import('../pages/IscDoTrackingPage'))
+import {
+  Addchart,
+  BarChart,
+  Dashboard,
+  People,
+  Storage,
+  TrackChanges,
+  ViewQuilt,
+} from '@mui/icons-material'
+
+// Lazy load pages from features
+const DashboardPage = lazy(() => import('@/features/dashboard/components/DashboardPage'))
+const DataManagerPage = lazy(() => import('@/features/data-manager/components/DataManagerPage'))
+const ChartListPage = lazy(() => import('@/features/chart-builder/components/ChartListPage'))
+const ChartBuilderPage = lazy(() => import('@/features/chart-builder/components/ChartBuilderPage'))
+const DashboardListPage = lazy(
+  () => import('@/features/dashboard-designer/components/DashboardListPage')
+)
+const DashboardDesignerPage = lazy(
+  () => import('@/features/dashboard-designer/components/DashboardDesignerPage')
+)
+const PublicDashboardPage = lazy(
+  () => import('@/features/dashboard-designer/components/PublicDashboardPage')
+)
+const UsersPage = lazy(() => import('@/features/users/components/UsersPage'))
+const IscDoTrackingPage = lazy(
+  () => import('@/features/isc-tracking/components/IscDoTrackingPage')
+)
 
 export interface NavItem {
   path: string
@@ -22,8 +39,8 @@ export interface NavItem {
 }
 
 /**
- * SINGLE SOURCE OF TRUTH
- * Thêm feature mới chỉ cần thêm 1 entry ở đây
+ * SINGLE SOURCE OF TRUTH for navigation
+ * Add new feature by adding entry here
  */
 export const navItems: NavItem[] = [
   {
@@ -61,14 +78,14 @@ export const navItems: NavItem[] = [
     hideInSidebar: true,
   },
   {
-    path: '/dashboard-list',
+    path: '/admin/dashboard-list',
     label: 'Dashboard Designer',
     icon: <ViewQuilt />,
     component: DashboardListPage,
     adminOnly: true,
   },
   {
-    path: '/dashboard-designer/:id',
+    path: '/admin/dashboard-designer/:id',
     label: 'Edit Dashboard',
     icon: <ViewQuilt />,
     component: DashboardDesignerPage,
@@ -92,7 +109,7 @@ export const navItems: NavItem[] = [
 ]
 
 // Helper functions
-export const getPublicItems = () => navItems.filter(item => !item.adminOnly)
-export const getAdminItems = () => navItems.filter(item => item.adminOnly)
-export const getSidebarItems = (isAdmin: boolean) => 
-  navItems.filter(item => !item.hideInSidebar && (!item.adminOnly || isAdmin))
+export const getPublicItems = () => navItems.filter((item) => !item.adminOnly)
+export const getAdminItems = () => navItems.filter((item) => item.adminOnly)
+export const getSidebarItems = (isAdmin: boolean) =>
+  navItems.filter((item) => !item.hideInSidebar && (!item.adminOnly || isAdmin))

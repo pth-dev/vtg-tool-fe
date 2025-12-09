@@ -1,6 +1,0 @@
-export { default as DashboardCanvas } from './DashboardCanvas'
-export { default as WidgetSidebar } from './WidgetSidebar'
-export { default as PropertiesPanel } from './PropertiesPanel'
-export { default as GlobalFilters } from './GlobalFilters'
-export { default as ShareDialog } from './ShareDialog'
-export type { Widget } from './DashboardCanvas'
