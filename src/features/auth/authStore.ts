@@ -10,9 +10,8 @@ interface User {
 
 interface AuthState {
   user: User | null
-  token: string | null
   isHydrated: boolean
-  setAuth: (user: User, token: string) => void
+  setAuth: (user: User) => void
   logout: () => void
   setHydrated: (state: boolean) => void
 }
@@ -21,15 +20,14 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
       isHydrated: false,
 
-      setAuth: (user, token) => {
-        set({ user, token })
+      setAuth: (user) => {
+        set({ user })
       },
 
       logout: () => {
-        set({ user: null, token: null })
+        set({ user: null })
       },
 
       setHydrated: (state) => {
@@ -37,12 +35,11 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'vtg-auth', // Key trong localStorage
+      name: 'vtg-auth',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
-      }), // Chỉ persist user và token
+      }),
       onRehydrateStorage: () => (state) => {
         // Callback khi state được load từ localStorage
         state?.setHydrated(true)

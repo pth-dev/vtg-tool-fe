@@ -12,15 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as PublicTokenRouteImport } from './routes/public.$token'
 import { Route as AuthenticatedIscDoTrackingRouteImport } from './routes/_authenticated/isc-do-tracking'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminDataSourcesRouteImport } from './routes/_authenticated/admin/data-sources'
-import { Route as AuthenticatedAdminDashboardListRouteImport } from './routes/_authenticated/admin/dashboard-list'
-import { Route as AuthenticatedAdminChartsRouteImport } from './routes/_authenticated/admin/charts'
-import { Route as AuthenticatedAdminChartBuilderRouteImport } from './routes/_authenticated/admin/chart-builder'
-import { Route as AuthenticatedAdminDashboardDesignerIdRouteImport } from './routes/_authenticated/admin/dashboard-designer.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -35,11 +30,6 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
-} as any)
-const PublicTokenRoute = PublicTokenRouteImport.update({
-  id: '/public/$token',
-  path: '/public/$token',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIscDoTrackingRoute =
   AuthenticatedIscDoTrackingRouteImport.update({
@@ -63,56 +53,22 @@ const AuthenticatedAdminDataSourcesRoute =
     path: '/data-sources',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
-const AuthenticatedAdminDashboardListRoute =
-  AuthenticatedAdminDashboardListRouteImport.update({
-    id: '/dashboard-list',
-    path: '/dashboard-list',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminChartsRoute =
-  AuthenticatedAdminChartsRouteImport.update({
-    id: '/charts',
-    path: '/charts',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminChartBuilderRoute =
-  AuthenticatedAdminChartBuilderRouteImport.update({
-    id: '/chart-builder',
-    path: '/chart-builder',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
-const AuthenticatedAdminDashboardDesignerIdRoute =
-  AuthenticatedAdminDashboardDesignerIdRouteImport.update({
-    id: '/dashboard-designer/$id',
-    path: '/dashboard-designer/$id',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/isc-do-tracking': typeof AuthenticatedIscDoTrackingRoute
-  '/public/$token': typeof PublicTokenRoute
   '/': typeof AuthenticatedIndexRoute
-  '/admin/chart-builder': typeof AuthenticatedAdminChartBuilderRoute
-  '/admin/charts': typeof AuthenticatedAdminChartsRoute
-  '/admin/dashboard-list': typeof AuthenticatedAdminDashboardListRoute
   '/admin/data-sources': typeof AuthenticatedAdminDataSourcesRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/admin/dashboard-designer/$id': typeof AuthenticatedAdminDashboardDesignerIdRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/isc-do-tracking': typeof AuthenticatedIscDoTrackingRoute
-  '/public/$token': typeof PublicTokenRoute
   '/': typeof AuthenticatedIndexRoute
-  '/admin/chart-builder': typeof AuthenticatedAdminChartBuilderRoute
-  '/admin/charts': typeof AuthenticatedAdminChartsRoute
-  '/admin/dashboard-list': typeof AuthenticatedAdminDashboardListRoute
   '/admin/data-sources': typeof AuthenticatedAdminDataSourcesRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/admin/dashboard-designer/$id': typeof AuthenticatedAdminDashboardDesignerIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -120,14 +76,9 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/isc-do-tracking': typeof AuthenticatedIscDoTrackingRoute
-  '/public/$token': typeof PublicTokenRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/admin/chart-builder': typeof AuthenticatedAdminChartBuilderRoute
-  '/_authenticated/admin/charts': typeof AuthenticatedAdminChartsRoute
-  '/_authenticated/admin/dashboard-list': typeof AuthenticatedAdminDashboardListRoute
   '/_authenticated/admin/data-sources': typeof AuthenticatedAdminDataSourcesRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/_authenticated/admin/dashboard-designer/$id': typeof AuthenticatedAdminDashboardDesignerIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -135,47 +86,31 @@ export interface FileRouteTypes {
     | '/login'
     | '/admin'
     | '/isc-do-tracking'
-    | '/public/$token'
     | '/'
-    | '/admin/chart-builder'
-    | '/admin/charts'
-    | '/admin/dashboard-list'
     | '/admin/data-sources'
     | '/admin/users'
-    | '/admin/dashboard-designer/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/admin'
     | '/isc-do-tracking'
-    | '/public/$token'
     | '/'
-    | '/admin/chart-builder'
-    | '/admin/charts'
-    | '/admin/dashboard-list'
     | '/admin/data-sources'
     | '/admin/users'
-    | '/admin/dashboard-designer/$id'
   id:
     | '__root__'
     | '/_authenticated'
     | '/login'
     | '/_authenticated/admin'
     | '/_authenticated/isc-do-tracking'
-    | '/public/$token'
     | '/_authenticated/'
-    | '/_authenticated/admin/chart-builder'
-    | '/_authenticated/admin/charts'
-    | '/_authenticated/admin/dashboard-list'
     | '/_authenticated/admin/data-sources'
     | '/_authenticated/admin/users'
-    | '/_authenticated/admin/dashboard-designer/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
-  PublicTokenRoute: typeof PublicTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -200,13 +135,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/public/$token': {
-      id: '/public/$token'
-      path: '/public/$token'
-      fullPath: '/public/$token'
-      preLoaderRoute: typeof PublicTokenRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/isc-do-tracking': {
       id: '/_authenticated/isc-do-tracking'
@@ -236,54 +164,17 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDataSourcesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/_authenticated/admin/dashboard-list': {
-      id: '/_authenticated/admin/dashboard-list'
-      path: '/dashboard-list'
-      fullPath: '/admin/dashboard-list'
-      preLoaderRoute: typeof AuthenticatedAdminDashboardListRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/charts': {
-      id: '/_authenticated/admin/charts'
-      path: '/charts'
-      fullPath: '/admin/charts'
-      preLoaderRoute: typeof AuthenticatedAdminChartsRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/chart-builder': {
-      id: '/_authenticated/admin/chart-builder'
-      path: '/chart-builder'
-      fullPath: '/admin/chart-builder'
-      preLoaderRoute: typeof AuthenticatedAdminChartBuilderRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/_authenticated/admin/dashboard-designer/$id': {
-      id: '/_authenticated/admin/dashboard-designer/$id'
-      path: '/dashboard-designer/$id'
-      fullPath: '/admin/dashboard-designer/$id'
-      preLoaderRoute: typeof AuthenticatedAdminDashboardDesignerIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
-  AuthenticatedAdminChartBuilderRoute: typeof AuthenticatedAdminChartBuilderRoute
-  AuthenticatedAdminChartsRoute: typeof AuthenticatedAdminChartsRoute
-  AuthenticatedAdminDashboardListRoute: typeof AuthenticatedAdminDashboardListRoute
   AuthenticatedAdminDataSourcesRoute: typeof AuthenticatedAdminDataSourcesRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
-  AuthenticatedAdminDashboardDesignerIdRoute: typeof AuthenticatedAdminDashboardDesignerIdRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
-  AuthenticatedAdminChartBuilderRoute: AuthenticatedAdminChartBuilderRoute,
-  AuthenticatedAdminChartsRoute: AuthenticatedAdminChartsRoute,
-  AuthenticatedAdminDashboardListRoute: AuthenticatedAdminDashboardListRoute,
   AuthenticatedAdminDataSourcesRoute: AuthenticatedAdminDataSourcesRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
-  AuthenticatedAdminDashboardDesignerIdRoute:
-    AuthenticatedAdminDashboardDesignerIdRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
@@ -308,7 +199,6 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
-  PublicTokenRoute: PublicTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

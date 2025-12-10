@@ -45,6 +45,7 @@ export function ChartContextMenu({
       onClose={onClose}
       anchorReference="anchorPosition"
       anchorPosition={anchorPosition || undefined}
+      onContextMenu={(e) => e.preventDefault()}
       slotProps={{
         paper: {
           sx: {
@@ -54,6 +55,10 @@ export function ChartContextMenu({
             boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.5)' : 3,
             minWidth: 200,
           },
+          onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
+        },
+        root: {
+          onContextMenu: (e: React.MouseEvent) => e.preventDefault(),
         },
       }}
     >

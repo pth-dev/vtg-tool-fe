@@ -7,14 +7,13 @@ import { useAuthStore } from './features/auth'
 
 export default function App() {
   const user = useAuthStore((s) => s.user)
-  const token = useAuthStore((s) => s.token)
 
   const auth = useMemo(
     () => ({
-      isAuthenticated: !!token,
+      isAuthenticated: !!user,
       isAdmin: user?.role === 'admin',
     }),
-    [token, user]
+    [user]
   )
 
   return <RouterProvider router={router} context={{ auth }} />

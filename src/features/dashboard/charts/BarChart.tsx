@@ -5,7 +5,7 @@ import { Box, useTheme } from '@mui/material'
 import { ApexOptions } from 'apexcharts'
 import Chart from 'react-apexcharts'
 
-import { useChartTheme } from '@/features/chart-builder/hooks/useChartTheme'
+import { useChartTheme } from '@/features/dashboard/hooks/useChartTheme'
 import { ChartContextMenu } from '@/shared/components/ui/ChartContextMenu'
 
 interface DataItem {
@@ -54,53 +54,86 @@ export default function BarChart({
 
   // Calculate max label length for dynamic padding
   const maxLabelLength = Math.max(...data.map((d) => d.name.length), 1)
-  const yAxisWidth = Math.min(Math.max(maxLabelLength * 7, 80), 150)
+  const yAxisWidth = Math.min(Math.max(maxLabelLength * 7, 100), 200)
 
-  // Handle right-click on chart bars
-  const handleContextMenu = useCallback(
-    (event: MouseEvent) => {
-      if (event.button !== 2 || !onShowData) return
-
-      event.preventDefault()
-      event.stopPropagation()
-
+  // Calculate data index from mouse position
+  const getDataIndexFromPosition = useCallback(
+    (clientY: number): number | null => {
       const chartElement = chartRef.current
-      if (!chartElement) return
+      if (!chartElement) return null
 
       const rect = chartElement.getBoundingClientRect()
-      const y = event.clientY - rect.top
+      const y = clientY - rect.top
       const chartAreaTop = 40
       const chartAreaHeight = rect.height - chartAreaTop - 30
       const adjustedY = y - chartAreaTop
 
-      if (adjustedY < 0 || adjustedY > chartAreaHeight) return
+      if (adjustedY < 0 || adjustedY > chartAreaHeight) return null
 
       const barHeight = chartAreaHeight / data.length
       const dataIndex = Math.floor(adjustedY / barHeight)
 
-      if (dataIndex >= 0 && dataIndex < data.length) {
+      return dataIndex >= 0 && dataIndex < data.length ? dataIndex : null
+    },
+    [data.length]
+  )
+
+  // Handle right-click on chart
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent) => {
+      if (!onShowData) return
+
+      event.preventDefault()
+      event.stopPropagation()
+
+      const dataIndex = getDataIndexFromPosition(event.clientY)
+
+      if (dataIndex !== null) {
         setContextMenu({
           position: { top: event.clientY, left: event.clientX },
           dataIndex,
         })
       }
     },
-    [data.length, onShowData]
+    [getDataIndexFromPosition, onShowData]
   )
 
-  // Prevent default browser context menu
+  // Prevent default browser context menu on chart element
   useEffect(() => {
     const chartElement = chartRef.current
     if (!chartElement || !onShowData) return
 
-    const preventDefaultContextMenu = (e: MouseEvent) => {
+    const handler = (e: MouseEvent) => {
       e.preventDefault()
       handleContextMenu(e)
     }
 
-    chartElement.addEventListener('contextmenu', preventDefaultContextMenu)
-    return () => chartElement.removeEventListener('contextmenu', preventDefaultContextMenu)
+    chartElement.addEventListener('contextmenu', handler, { capture: true })
+    return () => chartElement.removeEventListener('contextmenu', handler, { capture: true })
   }, [handleContextMenu, onShowData])
+
+  // Also prevent on document level when menu is open
+  useEffect(() => {
+    if (!contextMenu) return
+
+    const handler = (e: MouseEvent) => {
+      // Check if click is on chart area - if so, update menu position
+      const chartElement = chartRef.current
+      if (chartElement && chartElement.contains(e.target as Node)) {
+        e.preventDefault()
+        const dataIndex = getDataIndexFromPosition(e.clientY)
+        if (dataIndex !== null) {
+          setContextMenu({
+            position: { top: e.clientY, left: e.clientX },
+            dataIndex,
+          })
+        }
+      }
+    }
+
+    document.addEventListener('contextmenu', handler, { capture: true })
+    return () => document.removeEventListener('contextmenu', handler, { capture: true })
+  }, [contextMenu, getDataIndexFromPosition])
 
   const handleCloseContextMenu = () => setContextMenu(null)
 
@@ -123,6 +156,7 @@ export default function BarChart({
     chart: {
       ...chartTheme.chart,
       type: 'bar',
+      toolbar: { show: false },
       events: onClick
         ? {
             dataPointSelection: (event, _, config) => {
@@ -155,7 +189,7 @@ export default function BarChart({
         maxWidth: yAxisWidth,
         formatter: (val: string | number) => {
           const str = String(val)
-          return str.length > 15 ? str.substring(0, 15) + '...' : str
+          return str.length > 20 ? str.substring(0, 20) + '...' : str
         },
       },
     },
@@ -182,8 +216,8 @@ export default function BarChart({
   }
 
   return (
-    <Box ref={chartRef} sx={{ position: 'relative' }}>
-      <Chart type="bar" options={options} series={[{ data: values }]} height={height} />
+    <Box ref={chartRef} sx={{ position: 'relative', height: '100%', minHeight: height }}>
+      <Chart type="bar" options={options} series={[{ data: values }]} height="100%" />
 
       <ChartContextMenu
         anchorPosition={contextMenu?.position || null}

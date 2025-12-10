@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api } from '@/services/api'
+import { getUserFriendlyMessage } from '@/shared/utils/error-parser'
 
 export function useUsers() {
   const queryClient = useQueryClient()
@@ -24,7 +25,7 @@ export function useUsers() {
     createUser: createMutation.mutate,
     deleteUser: deleteMutation.mutate,
     isCreating: createMutation.isPending,
-    createError: createMutation.error?.message ?? null,
+    createError: createMutation.error ? getUserFriendlyMessage(createMutation.error) : null,
     resetCreateError: createMutation.reset,
   }
 }

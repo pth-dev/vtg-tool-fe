@@ -5,4 +5,3 @@ import IscDoTrackingPage from '@/features/isc-tracking/components/IscDoTrackingP
 export const Route = createFileRoute('/_authenticated/isc-do-tracking')({
   component: IscDoTrackingPage,
 })
-

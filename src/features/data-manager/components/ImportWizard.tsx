@@ -7,6 +7,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Step,
   StepLabel,
   Stepper,
@@ -24,12 +28,14 @@ interface ImportWizardProps {
   uploadedSource: DataSource | null
   datasetName: string
   isImporting: boolean
+  dataType: 'dashboard' | 'isc'
   onClose: () => void
   onUploadComplete: (source: DataSource) => void
   onUploadError: (error: string) => void
   onNext: () => void
   onBack: () => void
   onDatasetNameChange: (name: string) => void
+  onDataTypeChange: (type: 'dashboard' | 'isc') => void
   onImport: () => void
 }
 
@@ -39,12 +45,14 @@ export function ImportWizard({
   uploadedSource,
   datasetName,
   isImporting,
+  dataType,
   onClose,
   onUploadComplete,
   onUploadError,
   onNext,
   onBack,
   onDatasetNameChange,
+  onDataTypeChange,
   onImport,
 }: ImportWizardProps) {
   return (
@@ -62,7 +70,20 @@ export function ImportWizard({
         <Box sx={{ minHeight: 400 }}>
           {/* Step 1: Upload */}
           {activeStep === 0 && (
-            <UploadDropzone onUploadComplete={onUploadComplete} onError={onUploadError} />
+            <Box>
+              <FormControl fullWidth sx={{ mb: 3 }}>
+                <InputLabel>Data Type</InputLabel>
+                <Select
+                  value={dataType}
+                  label="Data Type"
+                  onChange={(e) => onDataTypeChange(e.target.value as 'dashboard' | 'isc')}
+                >
+                  <MenuItem value="dashboard">Dashboard (Lock/Hold/Failed)</MenuItem>
+                  <MenuItem value="isc">ISC DO System</MenuItem>
+                </Select>
+              </FormControl>
+              <UploadDropzone onUploadComplete={onUploadComplete} onError={onUploadError} dataType={dataType} />
+            </Box>
           )}
 
           {/* Step 2: Preview */}

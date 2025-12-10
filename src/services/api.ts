@@ -1,7 +1,6 @@
 import { API_BASE_URL } from '@/constants'
 import { parseApiError } from '@/shared/utils/error-parser'
 import type {
-  AuthResponse,
   Chart,
   ChartDataPoint,
   ColumnSchema,
@@ -35,12 +34,11 @@ export class ApiError extends Error {
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const token = localStorage.getItem('token')
   const res = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
+    credentials: 'include', // Include cookies
     headers: {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
       ...options?.headers,
     },
   })
@@ -57,11 +55,12 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
 export const api = {
   // Auth
   login: (email: string, password: string) =>
-    request<AuthResponse>('/auth/login', {
+    request<{message: string}>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
   me: () => request<User>('/auth/me'),
+  logout: () => request<{message: string}>('/auth/logout', { method: 'POST' }),
 
   // Users (admin only)
   getUsers: () => request<User[]>('/auth/users'),
@@ -70,15 +69,14 @@ export const api = {
   deleteUser: (id: number) => request(`/auth/users/${id}`, { method: 'DELETE' }),
 
   // DataSources
-  uploadFile: async (file: File, onProgress?: (percent: number) => void) => {
-    const token = localStorage.getItem('token')
+  uploadFile: async (file: File, onProgress?: (percent: number) => void, dataType: 'dashboard' | 'isc' = 'dashboard') => {
     const formData = new FormData()
     formData.append('file', file)
 
     return new Promise<DataSource>((resolve, reject) => {
       const xhr = new XMLHttpRequest()
-      xhr.open('POST', `${API_BASE_URL}/datasources/upload`)
-      xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      xhr.open('POST', `${API_BASE_URL}/datasources/upload?data_type=${dataType}`)
+      xhr.withCredentials = true // Include cookies
 
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable && onProgress) {
@@ -90,7 +88,16 @@ export const api = {
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve(JSON.parse(xhr.responseText))
         } else {
-          reject(new Error(xhr.responseText))
+          // Parse error response
+          try {
+            const errData = JSON.parse(xhr.responseText)
+            const msg = typeof errData.detail === 'string' 
+              ? errData.detail 
+              : 'Upload failed'
+            reject(new Error(msg))
+          } catch {
+            reject(new Error('Upload failed'))
+          }
         }
       }
       xhr.onerror = () => reject(new Error('Upload failed'))
@@ -203,4 +210,12 @@ export const api = {
   exportChartPng: (id: number) => `${API_BASE_URL}/export/chart/${id}/png`,
   exportChartSvg: (id: number) => `${API_BASE_URL}/export/chart/${id}/svg`,
   exportDashboardPdf: (id: number) => `${API_BASE_URL}/export/dashboard/${id}/pdf`,
+
+  // App Config
+  getConfig: <T>(key: string) => request<{ key: string; value: T }>(`/config/${key}`),
+  updateConfig: <T>(key: string, value: T) =>
+    request<{ key: string; value: T }>(`/config/${key}`, {
+      method: 'PUT',
+      body: JSON.stringify({ value }),
+    }),
 }

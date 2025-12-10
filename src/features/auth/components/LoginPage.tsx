@@ -29,16 +29,21 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     try {
-      const { access_token } = await api.login(data.email, data.password)
-      localStorage.setItem('token', access_token)
+      await api.login(data.email, data.password)
+      // Cookie is set automatically by backend
       const user = await api.me()
-      setAuth(user, access_token)
+      setAuth(user)
       navigate({ to: '/' })
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message)
+        // Map backend errors to user-friendly messages
+        if (err.message === 'Invalid credentials') {
+          setError('Incorrect email or password')
+        } else {
+          setError(err.message)
+        }
       } else {
-        setError('Invalid email or password')
+        setError('Incorrect email or password')
       }
     } finally {
       setLoading(false)

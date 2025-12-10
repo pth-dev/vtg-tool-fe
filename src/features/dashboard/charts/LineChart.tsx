@@ -3,7 +3,9 @@ import { useTheme } from '@mui/material'
 import { ApexOptions } from 'apexcharts'
 import Chart from 'react-apexcharts'
 
-import { chartColors, useChartTheme } from '@/features/chart-builder/hooks/useChartTheme'
+import { useChartTheme } from '@/features/dashboard/hooks/useChartTheme'
+
+const chartColors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4']
 
 interface Props {
   data: Record<string, unknown>[]
@@ -17,14 +19,7 @@ export default function LineChart({ data, xKey, series, height = 320 }: Props) {
   const chartTheme = useChartTheme()
   const isDark = theme.palette.mode === 'dark'
 
-  // Use provided colors or fall back to theme colors
-  const colors = series.map(
-    (s, i) =>
-      s.color ||
-      (isDark
-        ? chartColors.dark[i % chartColors.dark.length]
-        : chartColors.light[i % chartColors.light.length])
-  )
+  const colors = series.map((s, i) => s.color || chartColors[i % chartColors.length])
 
   const options: ApexOptions = {
     ...chartTheme,

@@ -1,6 +1,6 @@
 import { Box, Card, CardContent, CircularProgress, Grid, Typography, useTheme } from '@mui/material'
 
-import { BarChart, LineChart } from '@/features/dashboard/charts'
+import { BarChart, LineChart, PieChart } from '@/features/dashboard/charts'
 
 interface ChartData {
   by_customer?: Array<{ name: string; count?: number; value?: number; percent?: number }>
@@ -54,27 +54,25 @@ export function ChartsSection({
       )}
 
       {/* Bar Charts */}
-      <Grid container spacing={isMobile ? 2 : 3} mb={3}>
-        <Grid size={{ xs: 12, md: 6 }}>
+      <Grid container spacing={isMobile ? 2 : 3} mb={3} sx={{ minHeight: isMobile ? 300 : 380 }}>
+        <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex' }}>
           <ChartCard title="By Customer" hint="Right-click on bar to show details">
             <BarChart
               data={charts.by_customer?.slice(0, isMobile ? 5 : 10) || []}
               color="#3b82f6"
-              height={isMobile ? 220 : 280}
+              height={isMobile ? 220 : 300}
               onClick={(name) => onCrossFilter('customer', name)}
               onShowData={onShowData('customer')}
               selected={crossFilter?.type === 'customer' ? crossFilter.value : undefined}
             />
           </ChartCard>
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <ChartCard title="By Category" hint="Right-click on bar to show details">
-            <BarChart
-              data={charts.by_category?.slice(0, isMobile ? 5 : 8) || []}
-              color="#10b981"
-              height={isMobile ? 220 : 280}
+        <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex' }}>
+          <ChartCard title="By Category">
+            <PieChart
+              data={charts.by_category?.slice(0, 8) || []}
+              height={isMobile ? 220 : 300}
               onClick={(name) => onCrossFilter('category', name)}
-              onShowData={onShowData('category')}
               selected={crossFilter?.type === 'category' ? crossFilter.value : undefined}
             />
           </ChartCard>
@@ -116,8 +114,8 @@ function ChartCard({
   children: React.ReactNode
 }) {
   return (
-    <Card>
-      <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ p: { xs: 2, md: 3 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Typography variant="subtitle2" gutterBottom fontWeight={600}>
           {title}
         </Typography>
@@ -126,7 +124,7 @@ function ChartCard({
             {hint}
           </Typography>
         )}
-        {children}
+        <Box sx={{ flex: 1, minHeight: 0 }}>{children}</Box>
       </CardContent>
     </Card>
   )

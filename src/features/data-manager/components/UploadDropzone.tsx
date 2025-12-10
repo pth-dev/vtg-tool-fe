@@ -10,9 +10,10 @@ import type { DataSource } from '@/types'
 interface Props {
   onUploadComplete: (source: DataSource) => void
   onError?: (error: string) => void
+  dataType?: 'dashboard' | 'isc'
 }
 
-export function UploadDropzone({ onUploadComplete, onError }: Props) {
+export function UploadDropzone({ onUploadComplete, onError, dataType = 'dashboard' }: Props) {
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
   const [isDragging, setIsDragging] = useState(false)
@@ -43,12 +44,25 @@ export function UploadDropzone({ onUploadComplete, onError }: Props) {
       setProgress(0)
 
       try {
-        const result = await api.uploadFile(file, setProgress)
+        const result = await api.uploadFile(file, setProgress, dataType)
         setProgress(null)
         onUploadComplete(result)
       } catch (err: any) {
         setProgress(null)
-        const msg = err.message || ERROR_MESSAGES.NETWORK_ERROR
+        // Parse friendly error message
+        let msg: string = ERROR_MESSAGES.NETWORK_ERROR
+        if (err.message) {
+          // Map technical errors to user-friendly messages
+          if (err.message.includes("'int' object") || err.message.includes("'float' object")) {
+            msg = 'File contains invalid data format. Please check column headers.'
+          } else if (err.message.includes('Unsupported file type')) {
+            msg = 'Unsupported file type. Please use CSV, Excel, or JSON.'
+          } else if (err.message.includes('column') || err.message.includes('Column')) {
+            msg = err.message
+          } else if (err.message.length < 100 && !err.message.includes('{')) {
+            msg = err.message
+          }
+        }
         setError(msg)
         onError?.(msg)
       }

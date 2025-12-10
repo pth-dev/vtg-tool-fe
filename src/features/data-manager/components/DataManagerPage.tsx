@@ -79,6 +79,7 @@ export default function DataManagerPage() {
         activeStep={dm.activeStep}
         uploadedSource={dm.uploadedSource}
         datasetName={dm.datasetName}
+        dataType={dm.dataType}
         isImporting={dm.isImporting}
         onClose={dm.closeImportDialog}
         onUploadComplete={dm.handleUploadComplete}
@@ -86,6 +87,7 @@ export default function DataManagerPage() {
         onNext={dm.handleNextStep}
         onBack={dm.handleBackStep}
         onDatasetNameChange={dm.setDatasetName}
+        onDataTypeChange={dm.setDataType}
         onImport={dm.handleCreateDataset}
       />
 

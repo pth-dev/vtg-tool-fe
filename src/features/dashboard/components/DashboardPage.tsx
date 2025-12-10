@@ -7,7 +7,7 @@ import { Box, Chip, Typography, useMediaQuery, useTheme } from '@mui/material'
 import { DashboardSkeleton, FilterPanel, PageHeader } from '@/shared/components/ui'
 import { useDashboard } from '@/hooks'
 
-import { ChartsSection } from './ChartsSection'
+import { EditableChartsGrid } from './EditableChartsGrid'
 import { DrilldownDialog } from './DrilldownDialog'
 import { KpiSection } from './KpiSection'
 import { RootCausesTable } from './RootCausesTable'
@@ -117,11 +117,9 @@ export default function DashboardPage() {
         <KpiSection kpis={data.kpis} isMobile={isMobile} />
       </Box>
 
-      {/* Charts */}
-      <ChartsSection
+      {/* Charts - Editable Grid */}
+      <EditableChartsGrid
         charts={data.charts}
-        isMobile={isMobile}
-        isFetching={isFetching}
         crossFilter={crossFilter}
         onCrossFilter={toggleCrossFilter}
         onShowData={handleShowData}

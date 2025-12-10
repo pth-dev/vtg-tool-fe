@@ -6,6 +6,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TablePagination,
   TableRow,
@@ -57,32 +58,29 @@ export function DatasetTable({
 
   if (isLoading) {
     return (
-      <TableRow>
-        <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-          Loading...
-        </TableCell>
-      </TableRow>
+      <Box sx={{ py: 4, textAlign: 'center' }}>
+        Loading...
+      </Box>
     )
   }
 
   if (datasets.length === 0) {
     return (
-      <TableRow>
-        <TableCell colSpan={5}>
-          <EmptyState
-            icon={<Storage sx={{ fontSize: 48 }} />}
-            title="No datasets yet"
-            description="Import your first dataset to get started"
-            action={{ label: 'Import Data', onClick: onImport, icon: <Storage /> }}
-          />
-        </TableCell>
-      </TableRow>
+      <Box sx={{ py: 8, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <EmptyState
+          icon={<Storage sx={{ fontSize: 48 }} />}
+          title="No datasets yet"
+          description="Import your first dataset to get started"
+          action={{ label: 'Import Data', onClick: onImport, icon: <Storage /> }}
+        />
+      </Box>
     )
   }
 
   return (
     <>
-      <Table>
+      <TableContainer sx={{ overflowX: 'auto' }}>
+      <Table sx={{ minWidth: 650 }}>
         <TableHead>
           <TableRow sx={{ bgcolor: isDark ? '#1a1a1a' : 'grey.50' }}>
             <TableCell sx={{ fontWeight: 600, color: 'text.primary' }}>Dataset Name</TableCell>
@@ -132,6 +130,7 @@ export function DatasetTable({
           ))}
         </TableBody>
       </Table>
+      </TableContainer>
 
       {datasets.length > 0 && (
         <TablePagination

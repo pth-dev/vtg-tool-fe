@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { IMPORT_WIZARD_STEPS, PAGINATION, SUCCESS_MESSAGES } from '@/constants'
 import { api } from '@/services/api'
 import { useNotification } from '@/shared/hooks'
+import { getUserFriendlyMessage } from '@/shared/utils/error-parser'
 import type { DataSource, Dataset } from '@/types'
 
 interface UseDataManagerReturn {
@@ -24,6 +25,7 @@ interface UseDataManagerReturn {
   activeStep: number
   uploadedSource: DataSource | null
   datasetName: string
+  dataType: 'dashboard' | 'isc'
   // Notification
   notification: { message: string; type: 'success' | 'error' | 'info' | 'warning' } | null
   // Loading states
@@ -41,6 +43,7 @@ interface UseDataManagerReturn {
   handleNextStep: () => void
   handleBackStep: () => void
   setDatasetName: (name: string) => void
+  setDataType: (type: 'dashboard' | 'isc') => void
   handleCreateDataset: () => void
   handleDeleteDataset: () => void
   clearNotification: () => void
@@ -67,6 +70,7 @@ export function useDataManager(): UseDataManagerReturn {
   const [activeStep, setActiveStep] = useState(0)
   const [uploadedSource, setUploadedSource] = useState<DataSource | null>(null)
   const [datasetName, setDatasetName] = useState('')
+  const [dataType, setDataType] = useState<'dashboard' | 'isc'>('dashboard')
 
   // Fetch datasets
   const { data: datasetsResponse, isLoading } = useQuery({
@@ -82,7 +86,7 @@ export function useDataManager(): UseDataManagerReturn {
       showSuccess(SUCCESS_MESSAGES.DELETED)
       setDeleteTarget(null)
     },
-    onError: (err: any) => showError(err.message),
+    onError: (err: unknown) => showError(getUserFriendlyMessage(err)),
   })
 
   // Create dataset mutation
@@ -94,7 +98,7 @@ export function useDataManager(): UseDataManagerReturn {
       showSuccess(SUCCESS_MESSAGES.IMPORTED)
       closeImportDialog()
     },
-    onError: (err: any) => showError(err.message),
+    onError: (err: unknown) => showError(getUserFriendlyMessage(err)),
   })
 
   // Actions
@@ -105,6 +109,7 @@ export function useDataManager(): UseDataManagerReturn {
     setActiveStep(0)
     setUploadedSource(null)
     setDatasetName('')
+    setDataType('dashboard')
   }, [])
 
   const handleUploadComplete = useCallback((source: DataSource) => {
@@ -148,6 +153,7 @@ export function useDataManager(): UseDataManagerReturn {
     activeStep,
     uploadedSource,
     datasetName,
+    dataType,
     // Notification
     notification,
     // Loading states
@@ -171,6 +177,7 @@ export function useDataManager(): UseDataManagerReturn {
     handleNextStep,
     handleBackStep,
     setDatasetName,
+    setDataType,
     handleCreateDataset,
     handleDeleteDataset,
     clearNotification,

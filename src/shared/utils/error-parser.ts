@@ -229,3 +229,10 @@ export function hasFieldErrors(error: ParsedError | null): boolean {
   return !!error?.fieldErrors && Object.keys(error.fieldErrors).length > 0
 }
 
+/**
+ * Get user-friendly error message from any error
+ */
+export function getUserFriendlyMessage(error: unknown): string {
+  return parseApiError(error).message
+}
+
