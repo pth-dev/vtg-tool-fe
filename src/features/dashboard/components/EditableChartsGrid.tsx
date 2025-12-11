@@ -16,13 +16,13 @@ import {
 import { Edit, Save, Close, DragIndicator, Settings } from '@mui/icons-material'
 
 import { useAuthStore } from '@/features/auth'
-import { BarChart, LineChart, PieChart } from '@/features/dashboard/charts'
+import { BarChart, LineChart } from '@/features/dashboard/charts'
 import { api } from '@/services/api'
 
 interface ChartConfig {
   i: string
   title: string
-  type: 'bar' | 'line' | 'pie'
+  type: 'bar' | 'line'
   dataKey: string
   color: string
 }
@@ -65,7 +65,7 @@ const defaultLayouts = {
 
 const defaultChartConfigs: ChartConfig[] = [
   { i: 'by_customer', title: 'By Customer', type: 'bar', dataKey: 'by_customer', color: '#3b82f6' },
-  { i: 'by_category', title: 'By Category', type: 'pie', dataKey: 'by_category', color: '#10b981' },
+  { i: 'by_category', title: 'By Category', type: 'bar', dataKey: 'by_category', color: '#f59e0b' },
   { i: 'trend', title: 'Status Trend', type: 'line', dataKey: 'trend', color: '#8b5cf6' },
 ]
 
@@ -110,11 +110,18 @@ export function EditableChartsGrid({
     queryFn: () => api.getConfig<DashboardConfig>(CONFIG_KEY),
   })
 
-  // Apply saved config
+  // Apply saved config (migrate pie to bar)
   useEffect(() => {
     if (savedConfig?.value) {
       if (savedConfig.value.layouts) setLayouts(savedConfig.value.layouts)
-      if (savedConfig.value.chartConfigs) setChartConfigs(savedConfig.value.chartConfigs)
+      if (savedConfig.value.chartConfigs) {
+        // Migrate: convert any 'pie' type to 'bar' (for old configs)
+        const migratedConfigs = savedConfig.value.chartConfigs.map(c => ({
+          ...c,
+          type: ((c.type as string) === 'pie' ? 'bar' : c.type) as 'bar' | 'line'
+        }))
+        setChartConfigs(migratedConfigs)
+      }
     }
   }, [savedConfig])
 
@@ -162,21 +169,8 @@ export function EditableChartsGrid({
           data={(data as Array<{ name: string; count?: number }>).slice(0, 10)}
           color={config.color}
           height={200}
-          onClick={(name) => onCrossFilter(config.dataKey.replace('by_', ''), name)}
+          onClick={(name: string) => onCrossFilter(config.dataKey.replace('by_', ''), name)}
           onShowData={onShowData(config.dataKey.replace('by_', ''))}
-          selected={
-            crossFilter?.type === config.dataKey.replace('by_', '') ? crossFilter.value : undefined
-          }
-        />
-      )
-    }
-
-    if (config.type === 'pie') {
-      return (
-        <PieChart
-          data={(data as Array<{ name: string; count?: number }>).slice(0, 8)}
-          height={300}
-          onClick={(name) => onCrossFilter(config.dataKey.replace('by_', ''), name)}
           selected={
             crossFilter?.type === config.dataKey.replace('by_', '') ? crossFilter.value : undefined
           }
@@ -198,7 +192,7 @@ export function EditableChartsGrid({
     )
   }
 
-  const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#ec4899', '#06b6d4']
+  const colors = ['#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#10b981', '#ec4899', '#06b6d4']
 
   const gridChildren = useMemo(
     () =>

@@ -45,7 +45,7 @@ interface UseDataManagerReturn {
   setDatasetName: (name: string) => void
   setDataType: (type: 'dashboard' | 'isc') => void
   handleCreateDataset: () => void
-  handleDeleteDataset: () => void
+  handleDeleteDataset: (id?: number) => void
   clearNotification: () => void
 }
 
@@ -131,9 +131,10 @@ export function useDataManager(): UseDataManagerReturn {
     createMutation.mutate({ sourceId: uploadedSource.id, name: datasetName.trim() })
   }, [uploadedSource, datasetName])
 
-  const handleDeleteDataset = useCallback(() => {
-    if (!deleteTarget) return
-    deleteMutation.mutate(deleteTarget.id)
+  const handleDeleteDataset = useCallback((id?: number) => {
+    const targetId = id || deleteTarget?.id
+    if (!targetId) return
+    deleteMutation.mutate(targetId)
   }, [deleteTarget])
 
   return {

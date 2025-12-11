@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/constants'
+import { useAuthStore } from '@/features/auth'
 import { parseApiError } from '@/shared/utils/error-parser'
 import type {
   Chart,
@@ -46,6 +47,13 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   if (!res.ok) {
     const errorText = await res.text()
     const parsed = parseApiError(errorText)
+    
+    // Auto logout on 401
+    if (res.status === 401) {
+      useAuthStore.getState().logout()
+      window.location.href = '/login'
+    }
+    
     throw new ApiError(parsed.message, res.status, parsed.fieldErrors, parsed.isValidationError)
   }
 
@@ -104,29 +112,53 @@ export const api = {
       xhr.send(formData)
     })
   },
-  getDataSources: () => request<DataSource[]>('/datasources'),
+  getDataSources: (page = 1, pageSize = 20, search?: string) => {
+    const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) })
+    if (search) params.append('search', search)
+    return request<{ items: DataSource[]; total: number; page: number; page_size: number }>(
+      `/datasources?${params}`
+    )
+  },
   getDataSource: (id: number) => request<DataSource>(`/datasources/${id}`),
   previewDataSource: (id: number, rows = 100) =>
     request<{ columns: ColumnSchema[]; data: any[]; total_rows: number; preview_rows: number }>(
       `/datasources/${id}/preview?rows=${rows}`
     ),
+  getDataSourceData: (
+    id: number,
+    page = 1,
+    pageSize = 50,
+    sortBy?: string,
+    sortOrder?: string,
+    search?: string
+  ) => {
+    const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) })
+    if (sortBy) params.append('sort_by', sortBy)
+    if (sortOrder) params.append('sort_order', sortOrder)
+    if (search) params.append('search', search)
+    return request<PaginatedData>(`/datasources/${id}/data?${params}`)
+  },
   validateDataSource: (id: number) => request<ValidationResult>(`/datasources/${id}/validate`),
   getDataSourceSchema: (id: number) =>
     request<{ schema: ColumnSchema[] }>(`/datasources/${id}/schema`),
+  processDataSource: (sourceId: number, name: string) =>
+    request<DataSource>(`/datasources/${sourceId}/process?name=${encodeURIComponent(name)}`, {
+      method: 'POST',
+    }),
   deleteDataSource: (id: number) => request(`/datasources/${id}`, { method: 'DELETE' }),
 
-  // Datasets
+  // Legacy aliases (for backward compatibility)
   getDatasets: (page = 1, pageSize = 20, search?: string) => {
     const params = new URLSearchParams({ page: String(page), page_size: String(pageSize) })
     if (search) params.append('search', search)
     return request<{ items: Dataset[]; total: number; page: number; page_size: number }>(
-      `/datasets?${params}`
+      `/datasources?${params}`
     )
   },
-  getDataset: (id: number) => request<Dataset>(`/datasets/${id}`),
+  getDataset: (id: number) => request<Dataset>(`/datasources/${id}`),
   previewDataset: (id: number, rows = 100) =>
     request<{ columns: ColumnSchema[]; data: any[]; total_rows: number; preview_rows: number }>(
-      `/datasets/${id}/preview?rows=${rows}`
+      `/datasources/${id}/preview?rows=${rows}`
     ),
   getDatasetData: (
     id: number,
@@ -140,13 +172,13 @@ export const api = {
     if (sortBy) params.append('sort_by', sortBy)
     if (sortOrder) params.append('sort_order', sortOrder)
     if (search) params.append('search', search)
-    return request<PaginatedData>(`/datasets/${id}/data?${params}`)
+    return request<PaginatedData>(`/datasources/${id}/data?${params}`)
   },
   processDataset: (sourceId: number, name: string) =>
-    request<Dataset>(`/datasets/process?source_id=${sourceId}&name=${encodeURIComponent(name)}`, {
+    request<Dataset>(`/datasources/${sourceId}/process?name=${encodeURIComponent(name)}`, {
       method: 'POST',
     }),
-  deleteDataset: (id: number) => request(`/datasets/${id}`, { method: 'DELETE' }),
+  deleteDataset: (id: number) => request(`/datasources/${id}`, { method: 'DELETE' }),
 
   // Charts
   createChart: (data: { dataset_id: number; name: string; chart_type: string; config: any }) =>

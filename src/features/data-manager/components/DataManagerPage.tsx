@@ -20,8 +20,7 @@ export default function DataManagerPage() {
       confirmText: 'Delete',
       confirmColor: 'error',
       onConfirm: async () => {
-        dm.setDeleteTarget({ id: dataset.id, name: dataset.name })
-        dm.handleDeleteDataset()
+        dm.handleDeleteDataset(dataset.id)
       },
     })
   }

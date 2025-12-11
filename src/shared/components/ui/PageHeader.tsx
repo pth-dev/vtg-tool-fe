@@ -6,17 +6,18 @@ interface Props {
   title: string
   subtitle?: string
   action?: ReactNode
+  compact?: boolean
 }
 
-export default function PageHeader({ title, subtitle, action }: Props) {
+export default function PageHeader({ title, subtitle, action, compact }: Props) {
   return (
-    <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+    <Box display="flex" justifyContent="space-between" alignItems="center" mb={compact ? 0 : 3}>
       <Box>
-        <Typography variant="h5" fontWeight={600}>
+        <Typography variant={compact ? 'subtitle1' : 'h5'} fontWeight={600} lineHeight={1.2}>
           {title}
         </Typography>
         {subtitle && (
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="caption" color="text.secondary">
             {subtitle}
           </Typography>
         )}

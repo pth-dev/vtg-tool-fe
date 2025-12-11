@@ -5,7 +5,10 @@ import { api } from '@/services/api'
 export function useDataSources() {
   const queryClient = useQueryClient()
 
-  const query = useQuery({ queryKey: ['datasources'], queryFn: api.getDataSources })
+  const query = useQuery({ 
+    queryKey: ['datasources'], 
+    queryFn: () => api.getDataSources()
+  })
 
   const uploadMutation = useMutation({
     mutationFn: (file: File) => api.uploadFile(file),
@@ -18,7 +21,7 @@ export function useDataSources() {
   })
 
   return {
-    sources: query.data ?? [],
+    sources: query.data?.items ?? [],
     isLoading: query.isLoading,
     uploadFile: (file: File) => uploadMutation.mutate(file),
     deleteSource: deleteMutation.mutate,

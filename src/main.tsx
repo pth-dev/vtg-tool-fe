@@ -10,6 +10,15 @@ import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 
+// Hide loader when app mounts
+const hideLoader = () => {
+  const loader = document.getElementById('app-loader')
+  if (loader) {
+    loader.classList.add('hide')
+    setTimeout(() => loader.remove(), 300)
+  }
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -28,3 +37,5 @@ createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </StrictMode>
 )
+
+hideLoader()

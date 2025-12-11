@@ -4,13 +4,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 
-import { Alert, Box, Button, Card, CardContent, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Card, CardContent, TextField, Typography, useMediaQuery, useTheme } from '@mui/material'
 
 import { useAuthStore } from '@/features/auth'
 import { api, ApiError } from '@/services/api'
 import { loginSchema, type LoginFormData } from '@/shared/validation'
+const LOGO = '/logo.f0f4e5c943afc7875feb.png'
 
 export default function LoginPage() {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -30,18 +33,12 @@ export default function LoginPage() {
     setError('')
     try {
       await api.login(data.email, data.password)
-      // Cookie is set automatically by backend
       const user = await api.me()
       setAuth(user)
       navigate({ to: '/' })
     } catch (err) {
       if (err instanceof ApiError) {
-        // Map backend errors to user-friendly messages
-        if (err.message === 'Invalid credentials') {
-          setError('Incorrect email or password')
-        } else {
-          setError(err.message)
-        }
+        setError(err.message === 'Invalid credentials' ? 'Incorrect email or password' : err.message)
       } else {
         setError('Incorrect email or password')
       }
@@ -57,17 +54,29 @@ export default function LoginPage() {
       alignItems="center"
       justifyContent="center"
       bgcolor="background.default"
+      px={isMobile ? 2 : 0}
     >
-      <Card sx={{ width: '100%', maxWidth: 400 }}>
-        <CardContent sx={{ p: 4 }}>
-          <Box textAlign="center" mb={4}>
-            <Typography variant="h4" fontWeight={700} color="primary" mb={1}>
-              VTGTOOL
-            </Typography>
+      <Card 
+        sx={{ 
+          width: '100%', 
+          maxWidth: isMobile ? '100%' : 400,
+          boxShadow: isMobile ? 'none' : undefined,
+          bgcolor: isMobile ? 'transparent' : undefined,
+        }}
+      >
+        <CardContent sx={{ p: isMobile ? 2 : 4 }}>
+          <Box textAlign="center" mb={isMobile ? 3 : 4}>
+            <Box
+              component="img"
+              src={LOGO}
+              alt="VTGTOOL"
+              sx={{ height: isMobile ? 40 : 48, mb: 1 }}
+            />
             <Typography variant="body2" color="text.secondary">
               Admin Login
             </Typography>
           </Box>
+
           <form onSubmit={handleSubmit(onSubmit)}>
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
@@ -82,6 +91,7 @@ export default function LoginPage() {
               error={!!errors.email}
               helperText={errors.email?.message}
               margin="normal"
+              size={isMobile ? 'small' : 'medium'}
             />
             <TextField
               fullWidth
@@ -91,18 +101,20 @@ export default function LoginPage() {
               error={!!errors.password}
               helperText={errors.password?.message}
               margin="normal"
+              size={isMobile ? 'small' : 'medium'}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              size="large"
+              size={isMobile ? 'medium' : 'large'}
               disabled={loading}
               sx={{ mt: 3 }}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+
           <Box textAlign="center" mt={3}>
             <Typography
               component={Link}

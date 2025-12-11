@@ -17,9 +17,6 @@ interface FilterMultiSelectProps {
   isDark?: boolean
 }
 
-/**
- * Reusable multi-select dropdown for filters
- */
 export function FilterMultiSelect({
   label,
   value,
@@ -33,24 +30,17 @@ export function FilterMultiSelect({
   return (
     <FormControl
       size="small"
+      fullWidth={isMobile}
       sx={{
-        minWidth: isMobile ? 'calc(50% - 6px)' : 120,
-        flex: isMobile ? 1 : 'none',
+        minWidth: isMobile ? undefined : 120,
         '& .MuiOutlinedInput-root': {
           bgcolor: isActive
-            ? isDark
-              ? 'rgba(59,130,246,0.1)'
-              : '#eff6ff'
-            : isDark
-              ? '#18181b'
-              : 'white',
+            ? isDark ? 'rgba(59,130,246,0.1)' : '#eff6ff'
+            : isDark ? '#18181b' : 'white',
           borderRadius: 1.5,
           '& fieldset': {
             borderColor: isActive ? '#3b82f6' : isDark ? '#27272a' : '#e2e8f0',
             borderWidth: isActive ? 2 : 1,
-          },
-          '&:hover fieldset': {
-            borderColor: isActive ? '#3b82f6' : isDark ? '#3f3f46' : '#cbd5e1',
           },
         },
       }}
@@ -88,4 +78,3 @@ export function FilterMultiSelect({
     </FormControl>
   )
 }
-

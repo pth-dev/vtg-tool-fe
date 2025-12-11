@@ -28,11 +28,13 @@
     "apexcharts": "^5.3.6",
     "react": "^18.2.0",
     "react-apexcharts": "^1.9.0",
+    "react-d3-tree": "^3.6.6",
     "react-dom": "^18.2.0",
     "react-grid-layout": "^1.5.3",
     "react-hook-form": "^7.68.0",
     "react-router-dom": "^6.21.0",
-    "zod": "^4.1.13",
+    "xlsx": "^0.18.5",
+    "zod": "^3.23.8",
     "zustand": "^4.4.7"
   },
   "devDependencies": {

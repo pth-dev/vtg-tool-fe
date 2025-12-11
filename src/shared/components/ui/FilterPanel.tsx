@@ -1,13 +1,20 @@
-import { Clear, FilterAlt } from '@mui/icons-material'
+import { useState } from 'react'
+import { Clear, FilterAlt, Close } from '@mui/icons-material'
 import {
+  Badge,
   Box,
   Button,
+  Chip,
+  Drawer,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   OutlinedInput,
   Paper,
   Select,
+  Stack,
+  Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material'
@@ -41,17 +48,140 @@ export default function FilterPanel({ filters, options, selectedMonth, onChange,
   const theme = useTheme()
   const isDark = theme.palette.mode === 'dark'
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
-
-  const hasFilters =
-    filters.customers.length > 0 ||
-    filters.categories.length > 0 ||
-    filters.statuses.length > 0 ||
-    filters.products.length > 0
+  const [open, setOpen] = useState(false)
 
   const activeCount = [filters.customers, filters.categories, filters.statuses, filters.products].filter(
     (f) => f.length > 0
   ).length
 
+  // Mobile: Compact bar with Month + Filter button
+  if (isMobile) {
+    return (
+      <>
+        <Box display="flex" gap={1} alignItems="center">
+          <FormControl size="small" sx={{ minWidth: 100, flex: 1 }}>
+            <Select
+              value={filters.month || selectedMonth || ''}
+              onChange={(e) => onChange('month', e.target.value)}
+              displayEmpty
+              sx={{
+                fontSize: 13,
+                bgcolor: isDark ? '#18181b' : 'white',
+                '& .MuiSelect-select': { py: 1 },
+              }}
+            >
+              {options.months?.map((m) => (
+                <MenuItem key={m} value={m} sx={{ fontSize: 13 }}>{m}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          
+          <Badge badgeContent={activeCount} color="primary">
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<FilterAlt sx={{ fontSize: 16 }} />}
+              onClick={() => setOpen(true)}
+              sx={{ 
+                fontSize: 13, 
+                py: 0.875,
+                borderColor: activeCount > 0 ? 'primary.main' : 'divider',
+                bgcolor: activeCount > 0 ? (isDark ? 'rgba(59,130,246,0.1)' : '#eff6ff') : 'transparent',
+              }}
+            >
+              Filter
+            </Button>
+          </Badge>
+        </Box>
+
+        {/* Bottom Sheet */}
+        <Drawer
+          anchor="bottom"
+          open={open}
+          onClose={() => setOpen(false)}
+          PaperProps={{
+            sx: {
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
+              maxHeight: '70vh',
+              bgcolor: isDark ? '#09090b' : '#fff',
+            },
+          }}
+        >
+          <Box p={2}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography fontWeight={600}>Filters</Typography>
+              <IconButton size="small" onClick={() => setOpen(false)}>
+                <Close fontSize="small" />
+              </IconButton>
+            </Stack>
+
+            <Stack spacing={2}>
+              <FilterMultiSelect
+                label="Customer"
+                value={filters.customers}
+                options={options.customers}
+                onChange={(v) => onChange('customers', v)}
+                isDark={isDark}
+              />
+              <FilterMultiSelect
+                label="Category"
+                value={filters.categories}
+                options={options.categories}
+                onChange={(v) => onChange('categories', v)}
+                isDark={isDark}
+              />
+              <FilterMultiSelect
+                label="Status"
+                value={filters.statuses}
+                options={options.statuses}
+                onChange={(v) => onChange('statuses', v)}
+                isDark={isDark}
+              />
+              <FilterMultiSelect
+                label="Product"
+                value={filters.products}
+                options={options.products}
+                onChange={(v) => onChange('products', v)}
+                isDark={isDark}
+              />
+            </Stack>
+
+            {/* Active filters chips */}
+            {activeCount > 0 && (
+              <Box mt={2} display="flex" flexWrap="wrap" gap={0.5}>
+                {filters.customers.map((c) => (
+                  <Chip key={c} label={c} size="small" onDelete={() => onChange('customers', filters.customers.filter(x => x !== c))} />
+                ))}
+                {filters.categories.map((c) => (
+                  <Chip key={c} label={c} size="small" onDelete={() => onChange('categories', filters.categories.filter(x => x !== c))} />
+                ))}
+                {filters.statuses.map((s) => (
+                  <Chip key={s} label={s} size="small" onDelete={() => onChange('statuses', filters.statuses.filter(x => x !== s))} />
+                ))}
+                {filters.products.map((p) => (
+                  <Chip key={p} label={p} size="small" onDelete={() => onChange('products', filters.products.filter(x => x !== p))} />
+                ))}
+              </Box>
+            )}
+
+            <Stack direction="row" spacing={1} mt={3}>
+              {activeCount > 0 && (
+                <Button variant="outlined" fullWidth onClick={onClear}>
+                  Clear All
+                </Button>
+              )}
+              <Button variant="contained" fullWidth onClick={() => setOpen(false)}>
+                Apply
+              </Button>
+            </Stack>
+          </Box>
+        </Drawer>
+      </>
+    )
+  }
+
+  // Desktop: Full inline filter
   return (
     <Paper
       elevation={0}
@@ -64,169 +194,53 @@ export default function FilterPanel({ filters, options, selectedMonth, onChange,
         borderRadius: 2,
       }}
     >
-      <Box
-        display="flex"
-        flexDirection={isMobile ? 'column' : 'row'}
-        gap={2}
-        alignItems={isMobile ? 'stretch' : 'center'}
-      >
-        {/* Filter Label */}
-        <FilterLabel activeCount={activeCount} />
-
-        {/* Mobile Clear Button */}
-        {isMobile && hasFilters && <ClearButton onClick={onClear} />}
-
-        {/* Filter Controls */}
-        <Box display="flex" gap={1.5} flexWrap="wrap" flex={1}>
-          {/* Month Select */}
-          <MonthSelect
-            value={filters.month || selectedMonth}
-            options={options.months}
-            onChange={(v) => onChange('month', v)}
-            isMobile={isMobile}
-            isDark={isDark}
-          />
-
-          {/* Multi-Selects */}
-          <FilterMultiSelect
-            label="Customer"
-            value={filters.customers}
-            options={options.customers}
-            onChange={(v) => onChange('customers', v)}
-            isMobile={isMobile}
-            isDark={isDark}
-          />
-          <FilterMultiSelect
-            label="Category"
-            value={filters.categories}
-            options={options.categories}
-            onChange={(v) => onChange('categories', v)}
-            isMobile={isMobile}
-            isDark={isDark}
-          />
-          <FilterMultiSelect
-            label="Status"
-            value={filters.statuses}
-            options={options.statuses}
-            onChange={(v) => onChange('statuses', v)}
-            isMobile={isMobile}
-            isDark={isDark}
-          />
-          <FilterMultiSelect
-            label="Product"
-            value={filters.products}
-            options={options.products}
-            onChange={(v) => onChange('products', v)}
-            isMobile={isMobile}
-            isDark={isDark}
-          />
+      <Box display="flex" gap={2} alignItems="center">
+        <Box display="flex" alignItems="center" gap={0.5} color="text.secondary">
+          <FilterAlt sx={{ fontSize: 20 }} />
+          <Typography fontWeight={500} fontSize={14}>Filters</Typography>
+          {activeCount > 0 && (
+            <Box
+              component="span"
+              sx={{
+                bgcolor: 'primary.main',
+                color: isDark ? '#09090b' : 'white',
+                px: 0.75,
+                py: 0.125,
+                borderRadius: 10,
+                fontSize: 12,
+              }}
+            >
+              {activeCount}
+            </Box>
+          )}
         </Box>
 
-        {/* Desktop Clear Button */}
-        {!isMobile && hasFilters && <ClearButton onClick={onClear} isDark={isDark} />}
+        <Box display="flex" gap={1.5} flexWrap="wrap" flex={1}>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel sx={{ fontSize: 14 }}>Month</InputLabel>
+            <Select
+              value={filters.month || selectedMonth || ''}
+              onChange={(e) => onChange('month', e.target.value)}
+              input={<OutlinedInput label="Month" />}
+              sx={{ fontSize: 14, bgcolor: isDark ? '#18181b' : 'white' }}
+            >
+              {options.months?.map((m) => (
+                <MenuItem key={m} value={m}>{m}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FilterMultiSelect label="Customer" value={filters.customers} options={options.customers} onChange={(v) => onChange('customers', v)} isDark={isDark} />
+          <FilterMultiSelect label="Category" value={filters.categories} options={options.categories} onChange={(v) => onChange('categories', v)} isDark={isDark} />
+          <FilterMultiSelect label="Status" value={filters.statuses} options={options.statuses} onChange={(v) => onChange('statuses', v)} isDark={isDark} />
+          <FilterMultiSelect label="Product" value={filters.products} options={options.products} onChange={(v) => onChange('products', v)} isDark={isDark} />
+        </Box>
+
+        {activeCount > 0 && (
+          <Button size="small" startIcon={<Clear />} onClick={onClear} sx={{ color: 'text.secondary' }}>
+            Clear
+          </Button>
+        )}
       </Box>
     </Paper>
-  )
-}
-
-// Sub-components
-function FilterLabel({ activeCount }: { activeCount: number }) {
-  const theme = useTheme()
-  const isDark = theme.palette.mode === 'dark'
-
-  return (
-    <Box display="flex" alignItems="center" gap={1} color="text.secondary">
-      <FilterAlt fontSize="small" />
-      <Box component="span" fontWeight={500} fontSize={14}>
-        Filters
-      </Box>
-      {activeCount > 0 && (
-        <Box
-          component="span"
-          sx={{
-            bgcolor: 'primary.main',
-            color: isDark ? '#09090b' : 'white',
-            px: 1,
-            py: 0.25,
-            borderRadius: 10,
-            fontSize: 12,
-          }}
-        >
-          {activeCount}
-        </Box>
-      )}
-    </Box>
-  )
-}
-
-function ClearButton({ onClick, isDark = false }: { onClick: () => void; isDark?: boolean }) {
-  return (
-    <Button
-      size="small"
-      startIcon={<Clear />}
-      onClick={onClick}
-      sx={{
-        color: 'text.secondary',
-        '&:hover': {
-          bgcolor: isDark ? 'rgba(220,38,38,0.1)' : '#fee2e2',
-          color: '#dc2626',
-        },
-      }}
-    >
-      Clear
-    </Button>
-  )
-}
-
-function MonthSelect({
-  value,
-  options,
-  onChange,
-  isMobile,
-  isDark,
-}: {
-  value: string
-  options: string[]
-  onChange: (v: string) => void
-  isMobile: boolean
-  isDark: boolean
-}) {
-  return (
-    <FormControl
-      size="small"
-      sx={{
-        minWidth: isMobile ? '100%' : 120,
-        flex: isMobile ? 1 : 'none',
-        '& .MuiOutlinedInput-root': {
-          bgcolor: isDark ? '#18181b' : 'white',
-          borderRadius: 1.5,
-          '& fieldset': { borderColor: isDark ? '#27272a' : '#e2e8f0' },
-          '&:hover fieldset': { borderColor: isDark ? '#3f3f46' : '#cbd5e1' },
-        },
-      }}
-    >
-      <InputLabel sx={{ fontSize: 14 }}>Month</InputLabel>
-      <Select
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        input={<OutlinedInput label="Month" />}
-        sx={{ fontSize: 14 }}
-        MenuProps={{
-          PaperProps: {
-            sx: {
-              bgcolor: isDark ? '#18181b' : 'white',
-              border: '1px solid',
-              borderColor: 'divider',
-            },
-          },
-        }}
-      >
-        {options?.map((m) => (
-          <MenuItem key={m} value={m}>
-            {m}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
   )
 }

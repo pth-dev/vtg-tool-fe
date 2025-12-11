@@ -9,9 +9,6 @@ interface MobileHeaderProps {
   onMenuClick: () => void
 }
 
-/**
- * Mobile header component with logo and menu toggle
- */
 export function MobileHeader({ onMenuClick }: MobileHeaderProps) {
   return (
     <Box
@@ -26,26 +23,23 @@ export function MobileHeader({ onMenuClick }: MobileHeaderProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        px: 2,
-        py: 1,
+        px: 1.5,
+        py: 0.5,
         borderBottom: 1,
         borderColor: 'divider',
+        minHeight: 44,
       }}
     >
       <Box
         component="img"
         src={LOGO_FULL}
         alt="VTGTOOL"
-        sx={{
-          height: 28,
-          width: 'auto',
-          objectFit: 'contain',
-        }}
+        sx={{ height: 24, width: 'auto', objectFit: 'contain' }}
       />
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <ThemeToggle />
-        <IconButton onClick={onMenuClick}>
-          <Menu />
+        <IconButton size="small" onClick={onMenuClick}>
+          <Menu fontSize="small" />
         </IconButton>
       </Box>
     </Box>

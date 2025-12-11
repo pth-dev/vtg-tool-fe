@@ -10,19 +10,34 @@ interface Filters {
   products: string[]
 }
 
+interface MomChange {
+  total_orders?: number | null
+  lock_count?: number | null
+  hold_count?: number | null
+  failure_count?: number | null
+  lock_rate?: number | null
+  failure_rate?: number | null
+}
+
 interface DashboardData {
   kpis: {
     total_orders: number
-    resume_rate: number
-    failed_rate: number
-    top_category: { name: string; percent: number }
-    top_customer: { name: string; percent: number }
+    lock_count?: number
+    hold_count?: number
+    failure_count?: number
+    lock_rate?: number
+    failure_rate?: number
+    resume_rate?: number
+    top_category?: { name: string; percent: number }
+    top_customer?: { name: string; percent: number }
   }
+  prev_month_kpis?: Record<string, number>
+  mom_change?: MomChange
   charts: {
     by_customer: { name: string; count: number; percent: number }[]
     by_category: { name: string; count: number; percent: number }[]
     by_status: { name: string; count: number; percent: number }[]
-    trend: Record<string, any>[]
+    trend: Record<string, unknown>[]
   }
   root_causes: { root_cause: string; count: number; percent: number; improvement_plan: string }[]
   filters: {
@@ -33,6 +48,7 @@ interface DashboardData {
     products: string[]
   }
   selected_month: string
+  prev_month?: string
   source_name?: string
 }
 
@@ -61,10 +77,10 @@ export function useDashboard() {
     queryKey: ['dashboard', queryString],
     queryFn: () => fetch(`/api/dashboard?${queryString}`).then((r) => r.json()),
     staleTime: 30000,
-    placeholderData: keepPreviousData, // Keep showing old data while fetching new
+    placeholderData: keepPreviousData,
   })
 
-  const updateFilter = (key: keyof Filters, value: any) => {
+  const updateFilter = (key: keyof Filters, value: unknown) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -92,6 +108,7 @@ export function useDashboard() {
     filters,
     filterOptions: data?.filters,
     selectedMonth: data?.selected_month,
+    momChange: data?.mom_change,
     crossFilter,
     updateFilter,
     toggleCrossFilter,
